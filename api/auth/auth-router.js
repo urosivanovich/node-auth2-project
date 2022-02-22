@@ -18,7 +18,11 @@ router.post("/register", validateRoleName, async  (req, res, next) => {
     }
     */
    try {
-     const user = req.body
+     let user = req.body
+    if(!user.role_name || user.role_name.trim()) {
+      user.role_name = req.role_name
+    }
+
      const hash = bcrypt.hashSync(user.password, BCRYPT_ROUNDS)
      user.password = hash
      const newUser = await Help.add(user)
@@ -55,7 +59,7 @@ router.post("/login", checkUsernameExists, async (req, res, next) => {
       const [user] = await Help.findBy({username})
       if(user && bcrypt.compareSync(password, user.password)) {
         const token = makeToken(user)
-        res.status(200).json({message: `${username} is back!`, token})
+        res.status(200).json({message: `${user.username} is back!`, token})
       } else {
         next({status: 401, message: 'Invalid credentials'})
       }
