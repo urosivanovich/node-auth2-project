@@ -5,7 +5,7 @@ const Help = require('../users/users-model');
 const bcrypt = require("bcryptjs/dist/bcrypt");
 const makeToken = require('./auth-token')
 
-router.post("/register", validateRoleName, async  (req, res, next) => {
+router.post("/register", validateRoleName, (req, res, next) => {
   /**
     [POST] /api/auth/register { "username": "anna", "password": "1234", "role_name": "angel" }
 
@@ -17,20 +17,15 @@ router.post("/register", validateRoleName, async  (req, res, next) => {
       "role_name": "angel"
     }
     */
-   try {
-     let user = req.body
-    if(!user.role_name || user.role_name.trim()) {
-      user.role_name = req.role_name
-    }
-
-     const hash = bcrypt.hashSync(user.password, BCRYPT_ROUNDS)
-     user.password = hash
-     const newUser = await Help.add(user)
-     res.status(201).json(newUser)
-   } catch(err) {
-    next(err)
-   }
-
+  
+     const { username, password } = req.body
+     const { role_name } = req
+     const hash = bcrypt.hashSync(password, BCRYPT_ROUNDS)
+     Help.add({username, password: hash, role_name})
+     .then(newUser => {
+       res.status(201).json(newUser)
+     })
+     .catch(next)
 });
 
 
